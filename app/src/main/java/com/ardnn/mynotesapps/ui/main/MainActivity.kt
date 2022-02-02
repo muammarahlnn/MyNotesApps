@@ -16,7 +16,7 @@ class MainActivity : AppCompatActivity() {
 
     private var _binding: ActivityMainBinding? = null
     private val binding get() = _binding
-    private lateinit var adapter: NoteAdapter
+    private lateinit var adapter: NotePagedListAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,10 +25,10 @@ class MainActivity : AppCompatActivity() {
 
         val viewModel = obtainViewModel(this@MainActivity)
 
-        adapter = NoteAdapter(this@MainActivity)
+        adapter = NotePagedListAdapter(this)
         viewModel.getAllNotes().observe(this, { noteList ->
             if (noteList != null) {
-                adapter.setListNotes(noteList)
+                adapter.submitList(noteList)
             }
         })
 
