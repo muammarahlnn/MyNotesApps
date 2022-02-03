@@ -3,11 +3,14 @@ package com.ardnn.mynotesapps.ui.main
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.ardnn.mynotesapps.R
 import com.ardnn.mynotesapps.databinding.ActivityMainBinding
+import com.ardnn.mynotesapps.helper.SortUtils
 import com.ardnn.mynotesapps.helper.ViewModelFactory
 import com.ardnn.mynotesapps.ui.insert.NoteAddUpdateActivity
 import com.google.android.material.snackbar.Snackbar
@@ -16,6 +19,8 @@ class MainActivity : AppCompatActivity() {
 
     private var _binding: ActivityMainBinding? = null
     private val binding get() = _binding
+
+    private lateinit var viewModel: MainViewModel
     private lateinit var adapter: NotePagedListAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -23,10 +28,10 @@ class MainActivity : AppCompatActivity() {
         _binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding?.root)
 
-        val viewModel = obtainViewModel(this@MainActivity)
+        viewModel = obtainViewModel(this@MainActivity)
 
         adapter = NotePagedListAdapter(this)
-        viewModel.getAllNotes().observe(this, { noteList ->
+        viewModel.getAllNotes(SortUtils.NEWEST).observe(this, { noteList ->
             if (noteList != null) {
                 adapter.submitList(noteList)
             }
@@ -64,6 +69,28 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         _binding = null
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        var sort = ""
+        when (item.itemId) {
+            R.id.action_newest -> sort = SortUtils.NEWEST
+            R.id.action_oldest -> sort = SortUtils.OLDEST
+            R.id.action_random -> sort = SortUtils.RANDOM
+        }
+        viewModel.getAllNotes(sort).observe(this, { noteList ->
+            if (noteList != null) {
+                adapter.submitList(noteList)
+            }
+        })
+        item.isChecked = true
+
+        return super.onOptionsItemSelected(item)
     }
 
     private fun showSnackbarMessage(message: String) {
